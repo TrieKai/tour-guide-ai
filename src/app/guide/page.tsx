@@ -1,0 +1,39 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import CameraComponent from "@/components/CameraComponent";
+
+export default function TourGuidePage() {
+  const router = useRouter();
+  const [hasPermission, setHasPermission] = useState(false);
+
+  useEffect(() => {
+    // 檢查相機權限
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then(() => {
+        setHasPermission(true);
+      })
+      .catch(() => {
+        alert("需要相機權限才能使用導遊功能");
+        router.push("/");
+      });
+  }, [router]);
+
+  if (!hasPermission) {
+    return null;
+  }
+
+  return (
+    <div className="h-screen relative">
+      <CameraComponent />
+      <button
+        onClick={() => router.push("/")}
+        className="absolute top-5 left-5 px-5 py-2.5 bg-black/50 text-white border-none rounded-full cursor-pointer z-50 transition-all duration-300 hover:bg-black/70 active:scale-95"
+      >
+        返回首頁
+      </button>
+    </div>
+  );
+}

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getAddressFromCoordinates } from "@/services/geocoding";
+import { analyze, generateTourGuidePrompt } from "@/services/api";
 import clsx from "clsx";
 
 // 定義 Web Speech API 類型
@@ -52,7 +53,7 @@ const CameraComponent = () => {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   // 語音播放功能
-  const speak = useCallback((text: string) => {
+  const speak = useCallback((text: string): void => {
     if ("speechSynthesis" in window) {
       setIsSpeaking(true);
       const utterance = new SpeechSynthesisUtterance(text);
@@ -72,7 +73,7 @@ const CameraComponent = () => {
 
   // 處理使用者問題
   const handleUserQuestion = useCallback(
-    async (question: string) => {
+    async (question: string): Promise<void> => {
       if (!videoRef.current || !location) return;
 
       try {
@@ -94,26 +95,26 @@ const CameraComponent = () => {
           ? `目前位置：${address}`
           : `目前位置：緯度 ${location.latitude}，經度 ${location.longitude}`;
 
-        const prompt = `以下是使用者的問題：${question}\n${locationInfo}\n請根據照片內容和位置資訊，用繁體中文回答這個問題。如果問題與照片內容無關，請告知使用者。回答要簡潔有力。`;
-
-        const response = await fetch("/api/analyze", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            image: imageData.split(",")[1],
-            prompt,
-          }),
+        const prompt = generateTourGuidePrompt({
+          question,
+          locationInfo,
         });
 
-        if (!response.ok) {
-          throw new Error("API 請求失敗");
+        const response = await analyze({
+          image: imageData.split(",")[1],
+          prompt,
+          location: {
+            address,
+            coordinates: location,
+          },
+        });
+
+        if (response.error) {
+          throw new Error(response.error);
         }
 
-        const data = await response.json();
-        setDescription(data.text);
-        speak(data.text);
+        setDescription(response.text);
+        speak(response.text);
       } catch (error) {
         console.error("處理問題時發生錯誤:", error);
         setDescription("處理問題時發生錯誤，請再試一次。");
@@ -157,7 +158,7 @@ const CameraComponent = () => {
   }, [handleUserQuestion]);
 
   // 開始語音輸入
-  const startListening = useCallback(() => {
+  const startListening = useCallback((): void => {
     if (recognitionRef.current && !isListening && !isAnalyzing) {
       try {
         recognitionRef.current.start();
@@ -215,7 +216,7 @@ const CameraComponent = () => {
       }
     };
 
-    startCamera();
+    void startCamera();
 
     const video = videoRef.current;
 

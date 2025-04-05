@@ -12,7 +12,6 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
     "@googlemaps/js-api-loader": "^1.16.8",
-    "@types/google.maps": "^3.58.1",
     "@vercel/analytics": "^1.5.0",
     "axios": "^1.8.4",
     "clsx": "^2.1.1",
@@ -23,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/google.maps": "^3.58.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

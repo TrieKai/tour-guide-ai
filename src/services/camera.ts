@@ -15,7 +15,7 @@ export const startCamera = async (
     return await navigator.mediaDevices.getUserMedia({
       video: true,
     });
-  } catch (error) {
+  } catch {
     throw new Error("無法存取相機，請確認相機權限已開啟");
   }
 };

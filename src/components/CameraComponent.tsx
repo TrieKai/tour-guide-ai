@@ -213,9 +213,11 @@ export default function CameraComponent() {
 
     void initCamera();
 
+    const videoElement = videoRef.current;
+
     return () => {
-      if (videoRef.current?.srcObject) {
-        stopCamera(videoRef.current.srcObject as MediaStream);
+      if (videoElement?.srcObject) {
+        stopCamera(videoElement.srcObject as MediaStream);
       }
       stopSpeaking();
     };

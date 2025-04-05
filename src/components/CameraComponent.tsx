@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getAddressFromCoordinates } from "@/services/geocoding";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import clsx from "clsx";
 
 // 定義 Web Speech API 類型
@@ -50,10 +49,6 @@ const CameraComponent = () => {
     longitude: number;
   } | null>(null);
 
-  const genAI = useMemo(
-    () => new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || ""),
-    []
-  );
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   // 語音播放功能
@@ -82,9 +77,6 @@ const CameraComponent = () => {
 
       try {
         setIsAnalyzing(true);
-        const model = genAI.getGenerativeModel({
-          model: "gemini-2.0-flash-lite",
-        });
 
         const canvas = document.createElement("canvas");
         canvas.width = videoRef.current.videoWidth;
@@ -104,20 +96,24 @@ const CameraComponent = () => {
 
         const prompt = `以下是使用者的問題：${question}\n${locationInfo}\n請根據照片內容和位置資訊，用繁體中文回答這個問題。如果問題與照片內容無關，請告知使用者。回答要簡潔有力。`;
 
-        const result = await model.generateContent([
-          prompt,
-          {
-            inlineData: {
-              mimeType: "image/jpeg",
-              data: imageData.split(",")[1],
-            },
+        const response = await fetch("/api/analyze", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-        ]);
+          body: JSON.stringify({
+            image: imageData.split(",")[1],
+            prompt,
+          }),
+        });
 
-        const response = await result.response;
-        const aiResponse = response.text();
-        setDescription(aiResponse);
-        speak(aiResponse);
+        if (!response.ok) {
+          throw new Error("API 請求失敗");
+        }
+
+        const data = await response.json();
+        setDescription(data.text);
+        speak(data.text);
       } catch (error) {
         console.error("處理問題時發生錯誤:", error);
         setDescription("處理問題時發生錯誤，請再試一次。");
@@ -125,7 +121,7 @@ const CameraComponent = () => {
         setIsAnalyzing(false);
       }
     },
-    [genAI, speak, location, getAddress]
+    [speak, location, getAddress]
   );
 
   // 初始化語音識別
@@ -162,11 +158,17 @@ const CameraComponent = () => {
 
   // 開始語音輸入
   const startListening = useCallback(() => {
-    if (recognitionRef.current && !isListening) {
-      recognitionRef.current.start();
-      setIsListening(true);
+    if (recognitionRef.current && !isListening && !isAnalyzing) {
+      try {
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch (error) {
+        console.error("語音識別啟動失敗:", error);
+        setIsListening(false);
+        setError("語音識別啟動失敗，請重試");
+      }
     }
-  }, [isListening]);
+  }, [isListening, isAnalyzing]);
 
   // 獲取地理位置
   useEffect(() => {

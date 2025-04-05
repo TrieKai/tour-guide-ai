@@ -1,32 +1,37 @@
 import axios from "axios";
-import { AnalysisRequest, AnalysisResponse } from "@/types/analysis";
+import type { AnalysisRequest, AnalysisResponse } from "@/types/analysis";
 
 const api = axios.create({
   baseURL: "/api",
   headers: {
     "Content-Type": "application/json",
   },
-  // 添加錯誤處理
+  // Add error handling
   validateStatus: (status) => status < 500,
 });
 
-// 生成導遊提示詞
+// Generate tour guide prompt
 export const generateTourGuidePrompt = ({
   question,
   locationInfo,
+  landmarks,
 }: {
   question: string;
   locationInfo: string;
+  landmarks: string;
 }) => {
   return `你是一個專業的 AI 導遊，擅長解說景點和回答旅遊相關問題。
 
   當前地理資訊：
   ${locationInfo}
 
+  附近的地標：
+  ${landmarks}
+
   使用者問題：
   ${question}
 
-  請根據照片內容和位置資訊，回答這個問題。
+  請根據照片內容、位置資訊和附近地標，回答這個問題。
 
   回答要求：
   1. 如果照片中有相關景點或建築，優先介紹它們
@@ -36,7 +41,7 @@ export const generateTourGuidePrompt = ({
   5. 使用導遊式的親切語氣`;
 };
 
-// 分析圖片和回答問題
+// Analyze image and answer question
 export const analyze = async ({
   image,
   prompt,

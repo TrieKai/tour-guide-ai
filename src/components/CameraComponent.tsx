@@ -11,6 +11,8 @@ import {
   stopSpeaking,
 } from "@/services/speech";
 import { startCamera, stopCamera, captureImage } from "@/services/camera";
+import { getNearbyLandmarks } from "@/services/places";
+import { initializeGoogleMaps } from "@/services/google-maps";
 import type { SpeechRecognition, SpeechRecognitionEvent } from "@/types/speech";
 
 interface Location {
@@ -29,6 +31,23 @@ export default function CameraComponent() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [userQuestion, setUserQuestion] = useState("");
   const [description, setDescription] = useState("");
+  const [isGoogleMapsInitialized, setIsGoogleMapsInitialized] = useState(false);
+
+  // Initialize Google Maps
+  useEffect(() => {
+    initializeGoogleMaps()
+      .then((success) => {
+        if (success) {
+          setIsGoogleMapsInitialized(true);
+        } else {
+          setError("無法初始化 Google Maps 服務");
+        }
+      })
+      .catch((error) => {
+        console.error("初始化 Google Maps 時發生錯誤:", error);
+        setError("無法初始化 Google Maps 服務");
+      });
+  }, []);
 
   // Get address from coordinates
   const getAddress = useCallback(
@@ -36,7 +55,27 @@ export default function CameraComponent() {
       latitude: number,
       longitude: number
     ): Promise<string | undefined> => {
+      if (!isGoogleMapsInitialized) {
+        throw new Error("Google Maps 服務尚未初始化");
+      }
       return getAddressFromCoordinates(latitude, longitude);
+    },
+    [isGoogleMapsInitialized]
+  );
+
+  // Format landmarks for prompt
+  const formatLandmarks = useCallback(
+    (landmarks: Array<{ name: string; distance: number; type: string }>) => {
+      if (landmarks.length === 0) {
+        return "附近沒有發現明顯的地標。";
+      }
+
+      return landmarks
+        .map(
+          (landmark) =>
+            `${landmark.name}（${landmark.type}，距離約 ${landmark.distance} 公尺）`
+        )
+        .join("\n");
     },
     []
   );
@@ -48,19 +87,31 @@ export default function CameraComponent() {
         return;
       }
 
+      if (!isGoogleMapsInitialized) {
+        setDescription("Google Maps 服務尚未初始化，請稍後再試。");
+        return;
+      }
+
       try {
         setIsAnalyzing(true);
         const image = captureImage(videoRef.current);
 
-        // Get address
-        const address = await getAddress(location.latitude, location.longitude);
+        // Get address and landmarks
+        const [address, landmarks] = await Promise.all([
+          getAddress(location.latitude, location.longitude),
+          getNearbyLandmarks(location.latitude, location.longitude),
+        ]);
+
         const locationInfo = address
           ? `目前位置：${address}`
           : `目前位置：緯度 ${location.latitude}，經度 ${location.longitude}`;
 
+        const landmarksInfo = formatLandmarks(landmarks);
+
         const prompt = generateTourGuidePrompt({
           question,
           locationInfo,
+          landmarks: landmarksInfo,
         });
 
         const response = await analyze({
@@ -89,7 +140,7 @@ export default function CameraComponent() {
         setIsAnalyzing(false);
       }
     },
-    [location, getAddress]
+    [location, getAddress, formatLandmarks, isGoogleMapsInitialized]
   );
 
   // Initialize speech recognition

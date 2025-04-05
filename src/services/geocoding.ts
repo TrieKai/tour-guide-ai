@@ -1,23 +1,13 @@
-import { Loader } from "@googlemaps/js-api-loader";
+import { mapsLoader } from "./google-maps";
 
 let geocoder: google.maps.Geocoder | null = null;
 
 const initializeGeocoder = async () => {
-  if (geocoder) return geocoder;
-
-  const loader = new Loader({
-    apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-    version: "weekly",
-  });
-
-  try {
-    const { Geocoder } = await loader.importLibrary("geocoding");
+  if (!geocoder) {
+    const { Geocoder } = await mapsLoader.importLibrary("geocoding");
     geocoder = new Geocoder();
-    return geocoder;
-  } catch (error) {
-    console.error("Failed to initialize geocoder:", error);
-    throw error;
   }
+  return geocoder;
 };
 
 export const getAddressFromCoordinates = async (
@@ -25,17 +15,20 @@ export const getAddressFromCoordinates = async (
   longitude: number
 ): Promise<string | undefined> => {
   try {
-    const geocoderInstance = await initializeGeocoder();
-    const response = await geocoderInstance.geocode({
+    const geocoder = await initializeGeocoder();
+    if (!geocoder) {
+      throw new Error("無法初始化地理編碼服務");
+    }
+
+    const response = await geocoder.geocode({
       location: { lat: latitude, lng: longitude },
     });
 
     if (response.results && response.results.length > 0) {
       return response.results[0].formatted_address;
     }
-    return undefined;
   } catch (error) {
     console.error("Error getting address:", error);
-    return undefined;
+    throw error;
   }
 };

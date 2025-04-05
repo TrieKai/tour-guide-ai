@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://tour-guide-ai-iota.vercel.app
+
+# Sitemaps
+Sitemap: https://tour-guide-ai-iota.vercel.app/sitemap.xml

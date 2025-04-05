@@ -10,7 +10,7 @@ export default function TourGuidePage() {
   const [hasPermission, setHasPermission] = useState(false);
 
   useEffect(() => {
-    // 檢查相機權限
+    // check camera permission
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then(() => {

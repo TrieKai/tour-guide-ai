@@ -6,7 +6,7 @@ import { getAddressFromCoordinates } from "@/services/geocoding";
 import { analyze, generateTourGuidePrompt } from "@/services/api";
 import clsx from "clsx";
 
-// 定義 Web Speech API 類型
+// define Web Speech API types
 interface SpeechRecognitionEvent extends Event {
   results: {
     [index: number]: {
@@ -53,7 +53,7 @@ const CameraComponent = () => {
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  // 語音播放功能
+  // speak
   const speak = useCallback((text: string): void => {
     if ("speechSynthesis" in window) {
       setIsSpeaking(true);
@@ -64,7 +64,7 @@ const CameraComponent = () => {
     }
   }, []);
 
-  // 獲取地址
+  // get address
   const getAddress = useCallback(
     async (latitude: number, longitude: number) => {
       return getAddressFromCoordinates(latitude, longitude);
@@ -72,7 +72,7 @@ const CameraComponent = () => {
     []
   );
 
-  // 處理使用者問題
+  // handle user question
   const handleUserQuestion = useCallback(
     async (question: string): Promise<void> => {
       if (!videoRef.current || !location) return;
@@ -90,7 +90,7 @@ const CameraComponent = () => {
         ctx.drawImage(videoRef.current, 0, 0);
         const imageData = canvas.toDataURL("image/jpeg");
 
-        // 在這裡獲取地址
+        // get address
         const address = await getAddress(location.latitude, location.longitude);
         const locationInfo = address
           ? `目前位置：${address}`
@@ -126,7 +126,7 @@ const CameraComponent = () => {
     [speak, location, getAddress]
   );
 
-  // 初始化語音識別
+  // initialize speech recognition
   useEffect(() => {
     if ("SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
       const SpeechRecognition =
@@ -158,7 +158,7 @@ const CameraComponent = () => {
     };
   }, [handleUserQuestion]);
 
-  // 開始語音輸入
+  // start listening
   const startListening = useCallback((): void => {
     if (recognitionRef.current && !isListening && !isAnalyzing) {
       try {
@@ -172,7 +172,7 @@ const CameraComponent = () => {
     }
   }, [isListening, isAnalyzing]);
 
-  // 獲取地理位置
+  // get location
   useEffect(() => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -190,7 +190,7 @@ const CameraComponent = () => {
   useEffect(() => {
     const startCamera = async () => {
       try {
-        // 首先嘗試使用後置相機
+        // try to use the back camera first
         try {
           const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: { exact: "environment" } },
@@ -203,14 +203,14 @@ const CameraComponent = () => {
           console.log("無法使用後置相機，嘗試其他相機選項");
         }
 
-        // 如果無法使用後置相機，嘗試使用任何可用的相機
+        // if cannot use the back camera, try to use any available camera
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
         });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
         }
-        setError(""); // 清除錯誤訊息
+        setError(""); // clear error message
       } catch (err) {
         console.error("無法存取任何相機:", err);
         setError("無法存取相機，請確認相機權限已開啟");
@@ -226,7 +226,7 @@ const CameraComponent = () => {
         const tracks = (video.srcObject as MediaStream).getTracks();
         tracks.forEach((track) => track.stop());
       }
-      // 清理語音合成
+      // clear speech synthesis
       if ("speechSynthesis" in window) {
         speechSynthesis.cancel();
       }
@@ -242,14 +242,14 @@ const CameraComponent = () => {
         className="w-full h-full object-cover absolute top-0 left-0 z-10"
       />
 
-      {/* 錯誤提示 */}
+      {/* error message */}
       {error && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-500/80 text-white rounded-lg z-50">
           {error}
         </div>
       )}
 
-      {/* AI 回應 */}
+      {/* AI response */}
       {description && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl p-4 bg-black/70 text-white rounded-xl z-50 animate-fadeIn">
           {isSpeaking && (
@@ -259,7 +259,7 @@ const CameraComponent = () => {
         </div>
       )}
 
-      {/* 麥克風按鈕和使用者問題 */}
+      {/* microphone button and user question */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-50">
         {userQuestion && (
           <div className="px-4 py-2 bg-white/90 rounded-full text-sm text-black max-w-[80vw] text-center">

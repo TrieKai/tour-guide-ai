@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AudioLines, Mic } from "lucide-react";
 import { getAddressFromCoordinates } from "@/services/geocoding";
 import { analyze, generateTourGuidePrompt } from "@/services/api";
 import clsx from "clsx";
@@ -243,14 +244,14 @@ const CameraComponent = () => {
 
       {/* 錯誤提示 */}
       {error && (
-        <div className="absolute top-5 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-500/80 text-white rounded-lg z-50">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 px-6 py-3 bg-red-500/80 text-white rounded-lg z-50">
           {error}
         </div>
       )}
 
       {/* AI 回應 */}
       {description && (
-        <div className="absolute top-5 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl p-4 bg-black/70 text-white rounded-xl z-50 animate-fadeIn">
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl p-4 bg-black/70 text-white rounded-xl z-50 animate-fadeIn">
           {isSpeaking && (
             <div className="text-green-400 mb-2">🔊 正在為您解說...</div>
           )}
@@ -275,7 +276,7 @@ const CameraComponent = () => {
               : "bg-green-500 hover:scale-105 active:scale-95"
           )}
         >
-          {isListening ? "🎤" : "🎙️"}
+          {isListening ? <AudioLines /> : <Mic />}
         </button>
         {isAnalyzing && (
           <div className="text-white bg-black/50 px-4 py-2 rounded-full text-sm">

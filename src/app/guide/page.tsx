@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { LucideArrowLeft } from "lucide-react";
 import CameraComponent from "@/components/CameraComponent";
 
 export default function TourGuidePage() {
@@ -30,9 +31,9 @@ export default function TourGuidePage() {
       <CameraComponent />
       <button
         onClick={() => router.push("/")}
-        className="absolute top-5 left-5 px-5 py-2.5 bg-black/50 text-white border-none rounded-full cursor-pointer z-50 transition-all duration-300 hover:bg-black/70 active:scale-95"
+        className="absolute top-5 left-5 px-2.5 py-2.5 bg-black/50 text-white border-none rounded-full cursor-pointer z-50 transition-all duration-300 hover:bg-black/70 active:scale-95"
       >
-        返回首頁
+        <LucideArrowLeft />
       </button>
     </div>
   );

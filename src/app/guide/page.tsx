@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { LucideArrowLeft } from "lucide-react";
-import CameraComponent from "@/components/CameraComponent";
+
+const CameraComponent = dynamic(() => import("@/components/CameraComponent"), {
+  ssr: false,
+});
 
 export default function TourGuidePage() {
   const router = useRouter();

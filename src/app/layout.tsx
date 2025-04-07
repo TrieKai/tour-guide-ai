@@ -24,6 +24,13 @@ export const metadata: Metadata = {
   description: "Your personal AI tour guide that helps you explore the world",
   manifest: "/manifest.json",
   themeColor: "#ffffff",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/tour-guide-ai.png", type: "image/png" },
+    ],
+    apple: [{ url: "/icons/icon-192x192.png" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -39,7 +46,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="theme-color" content="#ffffff" />

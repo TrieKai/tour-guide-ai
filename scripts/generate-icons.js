@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
-const inputFile = path.join(__dirname, "../public/tour-guide-ai.svg");
+const inputFile = path.join(__dirname, "../public/tour-guide-ai.png");
 const outputDir = path.join(__dirname, "../public/icons");
 
 const generateIcons = async () => {
